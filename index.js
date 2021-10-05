@@ -62,14 +62,7 @@ app.post(apiversion + '/auth/signin', async (req, res) => {
               password: hashedPassword,
             }
 
-            let token = sign(user, secretkey)
-
-            res.setHeader('Content-Type', 'application/json')
-
-            res.header(
-              'Access-Control-Allow-Headers',
-              'Origin, X-Requested-With, Content-Type, Accept'
-            )
+            const token = sign(user, secretkey)
 
             return res.status(201).json({
               error: false,
