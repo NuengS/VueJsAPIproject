@@ -439,7 +439,7 @@ app.put(apiversion + '/service/:service_id', async (req, res) => {
 
 app.get(apiversion + '/notifications', async (req, res) => {
   db.query(
-    'SELECT * FROM notification INNER JOIN hair_salon ON notification.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON notification.user_id=users.userId',
+    'SELECT * FROM notification INNER JOIN hair_salon ON notification.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON notification.userId=users.userId',
     (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'notification ', data: results })
@@ -505,7 +505,7 @@ app.put(apiversion + '/notification/:notification_id', async (req, res) => {
 
 app.get(apiversion + '/books', async (req, res) => {
   db.query(
-    'SELECT * FROM booking INNER JOIN service ON booking.service_id=service.service_id INNER JOIN hair_salon ON booking.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON booking.hairdresser_id=hairdresser.userId  INNER JOIN users ON booking.customer_id=customer.userId',
+    'SELECT service.*,booking.*,hair_salon.*,hairdresser.user_name AS huser_name,hairdresser.user_lastname AS huser_lname,customer.user_name AS cuser_name,customer.user_lastname AS cuser_lname FROM booking INNER JOIN service ON booking.service_id=service.service_id  INNER JOIN hair_salon ON booking.hsalon_id=hair_salon.hsalon_id INNER JOIN users AS hairdresser ON  booking.hairdresser_id=hairdresser.userId   INNER JOIN users AS customer ON booking.customer_id=customer.userId',
     (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'book ', data: results })
