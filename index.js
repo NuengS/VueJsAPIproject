@@ -89,23 +89,25 @@ app.post(apiversion + '/auth/signin', async (req, res) => {
 })
 
 app.post(apiversion + '/auth/register', async (req, res) => {
-  var username = req.body.username
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10)
-  var hsalon_name = req.body.hsalon_name
-  var hsalon_detail = req.body.hsalon_detail
-  var hsalon_time = req.body.hsalon_time
-  var hsalon_pic = req.body.hsalon_pic
-  var hsalon_address = req.body.hsalon_address
-  var hsalon_lat = req.body.hsalon_lat
-  var hsalon_lng = req.body.hsalon_lng
-  var status_id = req.body.status_id
-  var user_name = req.body.user_name
-  var user_lastname = req.body.user_lastname
-  var user_number = req.body.user_number
-  var user_pic = req.body.user_pic
-  var hsalon_id = req.body.hsalon_id
+  const {
+    username,
+    hsalon_name,
+    hsalon_detail,
+    hsalon_time,
+    hsalon_pic,
+    hsalon_address,
+    hsalon_lat,
+    hsalon_lng,
+    status_id,
+    user_name,
+    user_lastname,
+    user_number,
+    user_pic,
+    password,
+  } = req.body
 
-  var newid
+  const hashedPassword = bcrypt.hashSync(password, 10)
+
   await db.query(
     `INSERT INTO hair_salon 
     (hsalon_name,hsalon_detail, hsalon_time, hsalon_pic, hsalon_address,hsalon_lat, hsalon_lng) 
@@ -114,24 +116,17 @@ app.post(apiversion + '/auth/register', async (req, res) => {
       if (error) {
         console.log(error)
       } else {
-        console.log(`hairID = ${results.insertId}`)
         db.query(
           `INSERT INTO users 
       (username,password,status_id,user_name,user_lastname,user_number,user_pic,hsalon_id)
       VALUES ( '${username}','${hashedPassword}',${status_id},'${user_name}','${user_lastname}',${user_number},'${user_pic}','${results.insertId}')`,
           (error, results, fields) => {
             if (error) console.log(error)
-            console.log(`userID = ${results.insertId}`)
           }
         )
       }
     }
   )
-
-  console.log(newid)
-
-  if (newid != null) {
-  }
 
   return res.status(204).end
 })
@@ -167,7 +162,7 @@ app.get(apiversion + '/owners', async (req, res) => {
 })
 
 app.get(apiversion + '/user/:userId', async (req, res) => {
-  var userId = Number(req.params.userId)
+  const userId = Number(req.params.userId)
 
   db.query(
     'SELECT * FROM users where userId=?',
@@ -195,14 +190,16 @@ app.delete(apiversion + '/user/:userId', async (req, res) => {
 })
 
 app.post(apiversion + '/user', async (req, res) => {
-  var username = req.body.username
-  var password = req.body.password
-  var status_id = req.body.status_id
-  var user_name = req.body.user_name
-  var user_lastname = req.body.user_lastname
-  var user_number = req.body.user_number
-  var user_pic = req.body.user_pic
-  var hsalon_id = req.body.hsalon_id
+  const {
+    username,
+    password,
+    status_id,
+    user_name,
+    user_lastname,
+    user_number,
+    user_pic,
+    hsalon_id,
+  } = req.body
 
   db.query(
     `INSERT INTO users 
@@ -216,15 +213,18 @@ app.post(apiversion + '/user', async (req, res) => {
 })
 
 app.put(apiversion + '/user/:userId', async (req, res) => {
-  var username = req.body.username
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10)
-  var status_id = req.body.status_id
-  var user_name = req.body.user_name
-  var user_lastname = req.body.user_lastname
-  var user_number = req.body.user_number
-  var user_pic = req.body.user_pic
-  var hsalon_id = req.body.hsalon_id
-  var userId = req.body.userId
+  const {
+    username,
+    password,
+    status_id,
+    user_name,
+    user_lastname,
+    user_number,
+    user_pic,
+    hsalon_id,
+  } = req.body
+
+  const hashedPassword = bcrypt.hashSync(password, 10)
 
   db.query(
     'UPDATE users SET username = ?, hashedPassword = ?, status_id = ? , user_name = ? , user_lastname = ? , user_number = ? , user_pic = ?, hsalon_id = ? WHERE userId = ?',
@@ -271,7 +271,7 @@ app.get(apiversion + '/Confirmhairsalons', verify, async (req, res) => {
 })
 
 app.get(apiversion + '/hairsalon/:hsalon_id', async (req, res) => {
-  var hsalon_id = Number(req.params.hsalon_id)
+  const hsalon_id = Number(req.params.hsalon_id)
 
   db.query(
     'SELECT * FROM hair_salon where hsalon_id=?',
@@ -299,8 +299,7 @@ app.delete(apiversion + '/hairsalon/:hsalon_id', async (req, res) => {
 })
 
 app.put(apiversion + '/Confirmhairsalon/:hsalon_id', async (req, res) => {
-  var status = req.body.status
-  var hsalon_id = req.params.hsalon_id
+  const hsalon_id = req.params.hsalon_id
 
   db.query(
     'UPDATE hair_salon SET status = ? WHERE hsalon_id = ?',
@@ -313,14 +312,17 @@ app.put(apiversion + '/Confirmhairsalon/:hsalon_id', async (req, res) => {
 })
 
 app.post(apiversion + '/hairsalon', verify, async (req, res) => {
-  var hsalon_name = req.body.hsalon_name
-  var hsalon_detail = req.body.hsalon_detail
-  var hsalon_time = req.body.hsalon_time
-  var hsalon_pic = req.body.hsalon_pic
-  var hsalon_address = req.body.hsalon_address
-  var hsalon_lat = req.body.hsalon_lat
-  var hsalon_lng = req.body.hsalon_lng
-  var status = 1
+  const {
+    hsalon_name,
+    hsalon_detail,
+    hsalon_time,
+    hsalon_pic,
+    hsalon_address,
+    hsalon_lat,
+    hsalon_lng,
+  } = req.body
+
+  const status = 1
 
   db.query(
     `INSERT INTO hair_salon 
@@ -334,15 +336,17 @@ app.post(apiversion + '/hairsalon', verify, async (req, res) => {
 })
 
 app.put(apiversion + '/hairsalon/:hsalon_id', async (req, res) => {
-  var hsalon_name = req.body.hsalon_name
-  var hsalon_detail = req.body.hsalon_detail
-  var hsalon_time = req.body.hsalon_time
-  var hsalon_pic = req.body.hsalon_pic
-  var hsalon_address = req.body.hsalon_address
-  var hsalon_lat = req.body.hsalon_lat
-  var hsalon_lng = req.body.hsalon_lng
+  const {
+    hsalon_name,
+    hsalon_detail,
+    hsalon_time,
+    hsalon_pic,
+    hsalon_address,
+    hsalon_lat,
+    hsalon_lng,
+  } = req.body
 
-  var hsalon_id = req.params.hsalon_id
+  const hsalon_id = req.params.hsalon_id
 
   db.query(
     'UPDATE hair_salon SET hsalon_name = ?, hsalon_detail = ?, hsalon_time = ?, hsalon_pic = ?, hsalon_address = ?, hsalon_lat = ?, hsalon_lng = ? WHERE hsalon_id = ?',
@@ -371,12 +375,7 @@ app.get(apiversion + '/services', async (req, res) => {
 })
 
 app.get(apiversion + '/service/:service_id', async (req, res) => {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-
-  var service_id = Number(req.params.service_id)
+  const service_id = Number(req.params.service_id)
 
   db.query(
     'SELECT * FROM service where service_id=?',
@@ -393,10 +392,6 @@ app.get(apiversion + '/service/:service_id', async (req, res) => {
 })
 
 app.delete(apiversion + '/service/:service_id', async (req, res) => {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
   db.query(
     'DELETE FROM service WHERE service_id = ?',
     req.params.service_id,
@@ -408,16 +403,8 @@ app.delete(apiversion + '/service/:service_id', async (req, res) => {
 })
 
 app.post(apiversion + '/service', async (req, res) => {
-  var service_name = req.body.service_name
-  var service_pic = req.body.service_pic
-  var service_price = req.body.service_price
-  var service_time = req.body.service_time
-  var hsalon_id = req.body.hsalon_id
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
+  const { service_name, service_pic, service_price, service_time, hsalon_id } =
+    req.body
 
   db.query(
     `INSERT INTO service 
@@ -431,17 +418,14 @@ app.post(apiversion + '/service', async (req, res) => {
 })
 
 app.put(apiversion + '/service/:service_id', async (req, res) => {
-  let service_name = req.body.service_name
-  let service_pic = req.body.service_pic
-  let service_price = req.body.service_price
-  let service_time = req.body.service_time
-  let hsalon_id = req.body.hsalon_id
-  let service_id = req.body.service_id
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
+  const {
+    service_name,
+    service_pic,
+    service_price,
+    service_time,
+    service_id,
+    hsalon_id,
+  } = req.body
 
   db.query(
     'UPDATE service SET service_name = ?, service_pic = ?, service_price = ?, service_time = ?, hsalon_id = ? WHERE service_id = ?',
@@ -471,7 +455,7 @@ app.get(apiversion + '/notifications', async (req, res) => {
 })
 
 app.get(apiversion + '/notification/:notification_id', async (req, res) => {
-  var notification_id = Number(req.params.notification_id)
+  const notification_id = Number(req.params.notification_id)
 
   db.query(
     'SELECT * FROM notification where notification_id=?',
@@ -499,9 +483,7 @@ app.delete(apiversion + '/notification/:notification_id', async (req, res) => {
 })
 
 app.post(apiversion + '/notification', async (req, res) => {
-  var notification_text = req.body.notification_text
-  var hairdresser_id = req.body.hairdresser_id
-  var hsalon_id = req.body.hsalon_id
+  const { notification_text, hairdresser_id, hsalon_id } = req.body
 
   db.query(
     `INSERT INTO notification 
@@ -515,10 +497,8 @@ app.post(apiversion + '/notification', async (req, res) => {
 })
 
 app.put(apiversion + '/notification/:notification_id', async (req, res) => {
-  var notification_text = req.body.notification_text
-  var hairdresser_id = req.body.hairdresser_id
-  var hsalon_id = req.body.hsalon_id
-  var notification_id = req.body.notification_id
+  const { notification_text, hairdresser_id, hsalon_id, notification_id } =
+    req.body
 
   db.query(
     'UPDATE notification SET notification_text = ?, hairdresser_id = ?, hsalon_id = ?= WHERE notification_id = ?',
@@ -541,7 +521,7 @@ app.get(apiversion + '/books', async (req, res) => {
 })
 
 app.get(apiversion + '/book/:booking_id', async (req, res) => {
-  var booking_id = Number(req.params.booking_id)
+  const booking_id = Number(req.params.booking_id)
 
   db.query(
     'SELECT * FROM booking where booking_id=?',
@@ -569,16 +549,18 @@ app.delete(apiversion + '/book/:booking_id', async (req, res) => {
 })
 
 app.post(apiversion + '/book', async (req, res) => {
-  var booking_day = req.body.booking_day
-  var booking_time = req.body.booking_time
-  var booking_dayuse = req.body.booking_dayuse
-  var booking_timeuse = req.body.booking_timeuse
-  var booking_status = req.body.booking_status
-  var booking_point = req.body.booking_point
-  var service_id = req.body.service_id
-  var hsalon_id = req.body.hsalon_id
-  var hairdresser_id = req.body.hairdresser_id
-  var customer_id = req.body.customer_id
+  const {
+    booking_day,
+    booking_time,
+    booking_dayuse,
+    booking_timeuse,
+    booking_status,
+    booking_point,
+    service_id,
+    hsalon_id,
+    hairdresser_id,
+    customer_id,
+  } = req.body
 
   db.query(
     `INSERT INTO booking 
@@ -594,18 +576,20 @@ app.post(apiversion + '/book', async (req, res) => {
 })
 
 app.put(apiversion + '/book/:booking_id', async (req, res) => {
-  var booking_day = req.body.booking_day
-  var booking_time = req.body.booking_time
-  var booking_dayuse = req.body.booking_dayuse
-  var booking_timeuse = req.body.booking_timeuse
-  var booking_status = req.body.booking_status
-  var booking_point = req.body.booking_point
-  var service_id = req.body.service_id
-  var hsalon_id = req.body.hsalon_id
-  var hairdresser_id = req.body.hairdresser_id
-  var customer_id = req.body.customer_id
+  const {
+    booking_day,
+    booking_time,
+    booking_dayuse,
+    booking_timeuse,
+    booking_status,
+    booking_point,
+    service_id,
+    hsalon_id,
+    hairdresser_id,
+    customer_id,
+  } = req.body
 
-  var booking_id = req.params.booking_id
+  const booking_id = req.params.booking_id
 
   db.query(
     'UPDATE booking SET booking_day = ?, booking_time = ?, booking_dayuse = ?, booking_timeuse = ?, booking_status = ?, booking_point = ?, service_id = ? , hsalon_id = ?, hairdresser_id = ?, customer_id = ? WHERE booking_id = ?',
