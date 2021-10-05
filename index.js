@@ -1,26 +1,25 @@
-var express = require('express')
-var cors = require('cors')
-var fileUpload = require('express-fileupload')
-var picturepath =
-  'C:/Users/ZAZAZAZAZAZAZA/Downloads/BB/src/assets/salonspicture/'
-var apiversion = '/api/v1'
+require('dotenv').config()
 
-const dotenv = require('dotenv')
-dotenv.config()
-const secretkey = process.env.SECRET
-
-//MYSQL Connection
-var db = require('./config/db.config')
-
+const express = require('express')
+const cors = require('cors')
+const fileUpload = require('express-fileupload')
 const bcrypt = require('bcryptjs')
-const { sign, verify } = require('./middleware.js')
 
-var port = process.env.PORT || 3000
+const { sign, verify } = require('./middleware.js')
+const db = require('./config/db.config')
+
+const picturepath =
+  'C:/Users/ZAZAZAZAZAZAZA/Downloads/BB/src/assets/salonspicture/'
+const apiversion = '/api/v1'
+const secretkey = process.env.SECRET
+const port = process.env.PORT || 3000
+
 const app = express()
+
 app.use(express.json())
 app.use(cors())
-
 app.use(fileUpload())
+
 app.post(apiversion + '/upload', verify, (req, res) => {
   if (!req.files) {
     return res.status(500).json({ msg: 'file is not found' })
@@ -37,6 +36,7 @@ app.post(apiversion + '/upload', verify, (req, res) => {
     return res.json({ name: myFile.name, path: `/${myFile.name}` })
   })
 })
+
 app.post(apiversion + '/auth/signin', (req, res) => {
   db.query(
     'SELECT * FROM users',
@@ -61,7 +61,7 @@ app.post(apiversion + '/auth/signin', (req, res) => {
               hsalon_id: req.body.hsalon_id,
               password: hashedPassword,
             }
-            // create a token
+
             let token = sign(user, secretkey)
 
             res.setHeader('Content-Type', 'application/json')
@@ -71,14 +71,12 @@ app.post(apiversion + '/auth/signin', (req, res) => {
               'Origin, X-Requested-With, Content-Type, Accept'
             )
 
-            return res
-              .status(201)
-              .json({
-                error: false,
-                message: 'user sigin',
-                userId: userId,
-                accessToken: token,
-              })
+            return res.status(201).json({
+              error: false,
+              message: 'user sigin',
+              userId: userId,
+              accessToken: token,
+            })
           } else {
             return res.status(401).json('login fail')
           }
@@ -91,8 +89,6 @@ app.post(apiversion + '/auth/signin', (req, res) => {
 })
 
 app.post(apiversion + '/auth/register', async (req, res) => {
-  // res.setHeader('Content-Type', 'application/json')
-
   var username = req.body.username
   const hashedPassword = bcrypt.hashSync(req.body.password, 10)
   var hsalon_name = req.body.hsalon_name
@@ -108,11 +104,6 @@ app.post(apiversion + '/auth/register', async (req, res) => {
   var user_number = req.body.user_number
   var user_pic = req.body.user_pic
   var hsalon_id = req.body.hsalon_id
-
-  //   db.query("SELECT MAX(hsalon_id)  AS Max FROM users ", function (error, results, fields) {
-  //     if (error) throw error
-  //     return res.json({ error: false, message: "Max ", data: results })
-  //   })
 
   var newid
   await db.query(
@@ -131,12 +122,9 @@ app.post(apiversion + '/auth/register', async (req, res) => {
           function (error, results, fields) {
             if (error) console.log(error)
             console.log(`userID = ${results.insertId}`)
-            //return res.status(201).json({ error: false, message: 'created a user' })
           }
         )
       }
-
-      //return res.json({ error: false, message: "Insert new hairsalon" })
     }
   )
 
@@ -148,7 +136,6 @@ app.post(apiversion + '/auth/register', async (req, res) => {
   return res.status(204).end
 })
 
-//Get all customers
 app.get(apiversion + '/customers', function (req, res) {
   db.query(
     'SELECT * FROM users WHERE status_id =1 ',
@@ -158,7 +145,7 @@ app.get(apiversion + '/customers', function (req, res) {
     }
   )
 })
-//Get all hairdressers
+
 app.get(apiversion + '/hairdressers', function (req, res) {
   db.query(
     'SELECT * FROM users WHERE status_id =2 ',
@@ -168,7 +155,7 @@ app.get(apiversion + '/hairdressers', function (req, res) {
     }
   )
 })
-//Get all owners
+
 app.get(apiversion + '/owners', function (req, res) {
   db.query(
     'SELECT * FROM users WHERE status_id =3 ',
@@ -179,7 +166,6 @@ app.get(apiversion + '/owners', function (req, res) {
   )
 })
 
-//Get user by id
 app.get(apiversion + '/user/:userId', function (req, res) {
   var userId = Number(req.params.userId)
 
@@ -197,9 +183,7 @@ app.get(apiversion + '/user/:userId', function (req, res) {
   )
 })
 
-//Delete user by id
 app.delete(apiversion + '/user/:userId', function (req, res) {
-  //Code for Delete
   db.query(
     'DELETE FROM users WHERE userId = ?',
     req.params.userId,
@@ -209,9 +193,7 @@ app.delete(apiversion + '/user/:userId', function (req, res) {
     }
   )
 })
-//Delete hairsalon by id
 
-//Add new user
 app.post(apiversion + '/user', function (req, res) {
   var username = req.body.username
   var password = req.body.password
@@ -233,10 +215,7 @@ app.post(apiversion + '/user', function (req, res) {
   )
 })
 
-//Edit user by id
 app.put(apiversion + '/user/:userId', function (req, res) {
-  //Code for Edit
-
   var username = req.body.username
   const hashedPassword = bcrypt.hashSync(req.body.password, 10)
   var status_id = req.body.status_id
@@ -267,7 +246,6 @@ app.put(apiversion + '/user/:userId', function (req, res) {
   )
 })
 
-//Get all hairsalons
 app.get(apiversion + '/hairsalons', function (req, res) {
   db.query(
     "SELECT * FROM hair_salon WHERE status='1' ",
@@ -278,7 +256,6 @@ app.get(apiversion + '/hairsalons', function (req, res) {
   )
 })
 
-//Get all applyhairsalons
 app.get(apiversion + '/Confirmhairsalons', verify, function (req, res) {
   db.query(
     "SELECT * FROM hair_salon WHERE status='0' ",
@@ -293,7 +270,6 @@ app.get(apiversion + '/Confirmhairsalons', verify, function (req, res) {
   )
 })
 
-//Get hairsalon by id
 app.get(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
   var hsalon_id = Number(req.params.hsalon_id)
 
@@ -311,9 +287,7 @@ app.get(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
   )
 })
 
-//Delete hairsalon by id
 app.delete(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
-  //Code for Delete
   db.query(
     'DELETE FROM hair_salon WHERE hsalon_id = ?',
     req.params.hsalon_id,
@@ -323,10 +297,8 @@ app.delete(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
     }
   )
 })
-//อนุมัติร้าน
-app.put(apiversion + '/Confirmhairsalon/:hsalon_id', function (req, res) {
-  //Code for Edit
 
+app.put(apiversion + '/Confirmhairsalon/:hsalon_id', function (req, res) {
   var status = req.body.status
   var hsalon_id = req.params.hsalon_id
 
@@ -340,7 +312,6 @@ app.put(apiversion + '/Confirmhairsalon/:hsalon_id', function (req, res) {
   )
 })
 
-//Add new hairsalon
 app.post(apiversion + '/hairsalon', verify, function (req, res) {
   var hsalon_name = req.body.hsalon_name
   var hsalon_detail = req.body.hsalon_detail
@@ -362,10 +333,7 @@ app.post(apiversion + '/hairsalon', verify, function (req, res) {
   )
 })
 
-//Edit hairsalon by id
 app.put(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
-  //Code for Edit
-
   var hsalon_name = req.body.hsalon_name
   var hsalon_detail = req.body.hsalon_detail
   var hsalon_time = req.body.hsalon_time
@@ -395,7 +363,6 @@ app.put(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
   )
 })
 
-//Get all services
 app.get(apiversion + '/services', function (req, res) {
   db.query('SELECT * FROM service', function (error, results, fields) {
     if (error) throw error
@@ -403,7 +370,6 @@ app.get(apiversion + '/services', function (req, res) {
   })
 })
 
-//Get service by id
 app.get(apiversion + '/service/:service_id', function (req, res) {
   res.header(
     'Access-Control-Allow-Headers',
@@ -426,13 +392,11 @@ app.get(apiversion + '/service/:service_id', function (req, res) {
   )
 })
 
-//Delete service by id
 app.delete(apiversion + '/service/:service_id', function (req, res) {
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
   )
-  //Code for Delete
   db.query(
     'DELETE FROM service WHERE service_id = ?',
     req.params.service_id,
@@ -443,7 +407,6 @@ app.delete(apiversion + '/service/:service_id', function (req, res) {
   )
 })
 
-//Add new service
 app.post(apiversion + '/service', function (req, res) {
   var service_name = req.body.service_name
   var service_pic = req.body.service_pic
@@ -467,10 +430,7 @@ app.post(apiversion + '/service', function (req, res) {
   )
 })
 
-//Edit service by id
 app.put(apiversion + '/service/:service_id', function (req, res) {
-  //Code for Edit
-
   let service_name = req.body.service_name
   let service_pic = req.body.service_pic
   let service_price = req.body.service_price
@@ -500,13 +460,7 @@ app.put(apiversion + '/service/:service_id', function (req, res) {
   )
 })
 
-//Get all notification
 app.get(apiversion + '/notifications', function (req, res) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-
   db.query(
     'SELECT * FROM notification INNER JOIN hair_salon ON notification.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON notification.user_id=users.userId',
     function (error, results, fields) {
@@ -516,13 +470,7 @@ app.get(apiversion + '/notifications', function (req, res) {
   )
 })
 
-//Get notification by id
 app.get(apiversion + '/notification/:notification_id', function (req, res) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-
   var notification_id = Number(req.params.notification_id)
 
   db.query(
@@ -539,13 +487,7 @@ app.get(apiversion + '/notification/:notification_id', function (req, res) {
   )
 })
 
-//Delete notification by id
 app.delete(apiversion + '/notification/:notification_id', function (req, res) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-  //Code for Delete
   db.query(
     'DELETE FROM notification WHERE notification_id = ?',
     req.params.notification_id,
@@ -556,16 +498,10 @@ app.delete(apiversion + '/notification/:notification_id', function (req, res) {
   )
 })
 
-//Add new notification
 app.post(apiversion + '/notification', function (req, res) {
   var notification_text = req.body.notification_text
   var hairdresser_id = req.body.hairdresser_id
   var hsalon_id = req.body.hsalon_id
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
 
   db.query(
     `INSERT INTO notification 
@@ -578,19 +514,11 @@ app.post(apiversion + '/notification', function (req, res) {
   )
 })
 
-//Edit notification by id
 app.put(apiversion + '/notification/:notification_id', function (req, res) {
-  //Code for Edit
-
   var notification_text = req.body.notification_text
   var hairdresser_id = req.body.hairdresser_id
   var hsalon_id = req.body.hsalon_id
   var notification_id = req.body.notification_id
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
 
   db.query(
     'UPDATE notification SET notification_text = ?, hairdresser_id = ?, hsalon_id = ?= WHERE notification_id = ?',
@@ -602,13 +530,7 @@ app.put(apiversion + '/notification/:notification_id', function (req, res) {
   )
 })
 
-//Get all book
 app.get(apiversion + '/books', function (req, res) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-
   db.query(
     'SELECT * FROM booking INNER JOIN service ON booking.service_id=service.service_id INNER JOIN hair_salon ON booking.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON booking.hairdresser_id=hairdresser.userId  INNER JOIN users ON booking.customer_id=customer.userId',
     function (error, results, fields) {
@@ -618,13 +540,7 @@ app.get(apiversion + '/books', function (req, res) {
   )
 })
 
-//Get hairsalon by id
 app.get(apiversion + '/book/:booking_id', function (req, res) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-
   var booking_id = Number(req.params.booking_id)
 
   db.query(
@@ -641,13 +557,7 @@ app.get(apiversion + '/book/:booking_id', function (req, res) {
   )
 })
 
-//Delete book by id
 app.delete(apiversion + '/book/:booking_id', function (req, res) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-  //Code for Delete
   db.query(
     'DELETE FROM booking WHERE booking_id = ?',
     req.params.booking_id,
@@ -658,7 +568,6 @@ app.delete(apiversion + '/book/:booking_id', function (req, res) {
   )
 })
 
-//Add new book
 app.post(apiversion + '/book', function (req, res) {
   var booking_day = req.body.booking_day
   var booking_time = req.body.booking_time
@@ -670,11 +579,6 @@ app.post(apiversion + '/book', function (req, res) {
   var hsalon_id = req.body.hsalon_id
   var hairdresser_id = req.body.hairdresser_id
   var customer_id = req.body.customer_id
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
 
   db.query(
     `INSERT INTO booking 
@@ -689,10 +593,7 @@ app.post(apiversion + '/book', function (req, res) {
   )
 })
 
-//Edit book by id
 app.put(apiversion + '/book/:booking_id', function (req, res) {
-  //Code for Edit
-
   var booking_day = req.body.booking_day
   var booking_time = req.body.booking_time
   var booking_dayuse = req.body.booking_dayuse
@@ -705,11 +606,6 @@ app.put(apiversion + '/book/:booking_id', function (req, res) {
   var customer_id = req.body.customer_id
 
   var booking_id = req.params.booking_id
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
 
   db.query(
     'UPDATE booking SET booking_day = ?, booking_time = ?, booking_dayuse = ?, booking_timeuse = ?, booking_status = ?, booking_point = ?, service_id = ? , hsalon_id = ?, hairdresser_id = ?, customer_id = ? WHERE booking_id = ?',
