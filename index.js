@@ -20,14 +20,14 @@ app.use(express.json())
 app.use(cors())
 app.use(fileUpload())
 
-app.post(apiversion + '/upload', verify, (req, res) => {
+app.post(apiversion + '/upload', verify, async (req, res) => {
   if (!req.files) {
     return res.status(500).json({ msg: 'file is not found' })
   }
 
   const myFile = req.files.file
 
-  myFile.mv(`${picturepath}${myFile.name}`, function (err) {
+  myFile.mv(`${picturepath}${myFile.name}`, async (err) => {
     if (err) {
       console.log(err)
       return res.status(500).json({ msg: 'Error occured' })
@@ -37,11 +37,11 @@ app.post(apiversion + '/upload', verify, (req, res) => {
   })
 })
 
-app.post(apiversion + '/auth/signin', (req, res) => {
+app.post(apiversion + '/auth/signin', async (req, res) => {
   db.query(
     'SELECT * FROM users',
     req.body.username,
-    function (error, results, fields) {
+    (error, results, fields) => {
       try {
         if (error) {
           throw error
@@ -110,7 +110,7 @@ app.post(apiversion + '/auth/register', async (req, res) => {
     `INSERT INTO hair_salon 
     (hsalon_name,hsalon_detail, hsalon_time, hsalon_pic, hsalon_address,hsalon_lat, hsalon_lng) 
     VALUES ( '${hsalon_name}','${hsalon_detail}', '${hsalon_time}', '${hsalon_pic}', '${hsalon_address}', ${hsalon_lat}, ${hsalon_lng})`,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) {
         console.log(error)
       } else {
@@ -119,7 +119,7 @@ app.post(apiversion + '/auth/register', async (req, res) => {
           `INSERT INTO users 
       (username,password,status_id,user_name,user_lastname,user_number,user_pic,hsalon_id)
       VALUES ( '${username}','${hashedPassword}',${status_id},'${user_name}','${user_lastname}',${user_number},'${user_pic}','${results.insertId}')`,
-          function (error, results, fields) {
+          (error, results, fields) => {
             if (error) console.log(error)
             console.log(`userID = ${results.insertId}`)
           }
@@ -136,43 +136,43 @@ app.post(apiversion + '/auth/register', async (req, res) => {
   return res.status(204).end
 })
 
-app.get(apiversion + '/customers', function (req, res) {
+app.get(apiversion + '/customers', async (req, res) => {
   db.query(
     'SELECT * FROM users WHERE status_id =1 ',
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'user ', data: results })
     }
   )
 })
 
-app.get(apiversion + '/hairdressers', function (req, res) {
+app.get(apiversion + '/hairdressers', async (req, res) => {
   db.query(
     'SELECT * FROM users WHERE status_id =2 ',
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'user ', data: results })
     }
   )
 })
 
-app.get(apiversion + '/owners', function (req, res) {
+app.get(apiversion + '/owners', async (req, res) => {
   db.query(
     'SELECT * FROM users WHERE status_id =3 ',
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'user ', data: results })
     }
   )
 })
 
-app.get(apiversion + '/user/:userId', function (req, res) {
+app.get(apiversion + '/user/:userId', async (req, res) => {
   var userId = Number(req.params.userId)
 
   db.query(
     'SELECT * FROM users where userId=?',
     userId.toString(),
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({
         error: false,
@@ -183,18 +183,18 @@ app.get(apiversion + '/user/:userId', function (req, res) {
   )
 })
 
-app.delete(apiversion + '/user/:userId', function (req, res) {
+app.delete(apiversion + '/user/:userId', async (req, res) => {
   db.query(
     'DELETE FROM users WHERE userId = ?',
     req.params.userId,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'user DELETE' })
     }
   )
 })
 
-app.post(apiversion + '/user', function (req, res) {
+app.post(apiversion + '/user', async (req, res) => {
   var username = req.body.username
   var password = req.body.password
   var status_id = req.body.status_id
@@ -208,14 +208,14 @@ app.post(apiversion + '/user', function (req, res) {
     `INSERT INTO users 
       (username,password, status_id,user_name,user_lastname,user_number,user_pic,hsalon_id) 
       VALUES ( '${username}','${password}', '${status_id}', '${user_name}', '${user_lastname}', '${user_number}', '${user_pic}', '${hsalon_id}')`,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Insert new user' })
     }
   )
 })
 
-app.put(apiversion + '/user/:userId', function (req, res) {
+app.put(apiversion + '/user/:userId', async (req, res) => {
   var username = req.body.username
   const hashedPassword = bcrypt.hashSync(req.body.password, 10)
   var status_id = req.body.status_id
@@ -239,27 +239,27 @@ app.put(apiversion + '/user/:userId', function (req, res) {
       hsalon_id,
       userId,
     ],
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'update user' })
     }
   )
 })
 
-app.get(apiversion + '/hairsalons', function (req, res) {
+app.get(apiversion + '/hairsalons', async (req, res) => {
   db.query(
     "SELECT * FROM hair_salon WHERE status='1' ",
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'hairsalon ', data: results })
     }
   )
 })
 
-app.get(apiversion + '/Confirmhairsalons', verify, function (req, res) {
+app.get(apiversion + '/Confirmhairsalons', verify, async (req, res) => {
   db.query(
     "SELECT * FROM hair_salon WHERE status='0' ",
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({
         error: false,
@@ -270,13 +270,13 @@ app.get(apiversion + '/Confirmhairsalons', verify, function (req, res) {
   )
 })
 
-app.get(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
+app.get(apiversion + '/hairsalon/:hsalon_id', async (req, res) => {
   var hsalon_id = Number(req.params.hsalon_id)
 
   db.query(
     'SELECT * FROM hair_salon where hsalon_id=?',
     hsalon_id.toString(),
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({
         error: false,
@@ -287,32 +287,32 @@ app.get(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
   )
 })
 
-app.delete(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
+app.delete(apiversion + '/hairsalon/:hsalon_id', async (req, res) => {
   db.query(
     'DELETE FROM hair_salon WHERE hsalon_id = ?',
     req.params.hsalon_id,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Hairsalon DELETE' })
     }
   )
 })
 
-app.put(apiversion + '/Confirmhairsalon/:hsalon_id', function (req, res) {
+app.put(apiversion + '/Confirmhairsalon/:hsalon_id', async (req, res) => {
   var status = req.body.status
   var hsalon_id = req.params.hsalon_id
 
   db.query(
     'UPDATE hair_salon SET status = ? WHERE hsalon_id = ?',
     [(status = 1), hsalon_id],
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Confirm hairsalon' })
     }
   )
 })
 
-app.post(apiversion + '/hairsalon', verify, function (req, res) {
+app.post(apiversion + '/hairsalon', verify, async (req, res) => {
   var hsalon_name = req.body.hsalon_name
   var hsalon_detail = req.body.hsalon_detail
   var hsalon_time = req.body.hsalon_time
@@ -326,14 +326,14 @@ app.post(apiversion + '/hairsalon', verify, function (req, res) {
     `INSERT INTO hair_salon 
     (hsalon_name,hsalon_detail, hsalon_time, hsalon_pic, hsalon_address,hsalon_lat, hsalon_lng , status) 
     VALUES ( '${hsalon_name}','${hsalon_detail}', '${hsalon_time}', '${hsalon_pic}', '${hsalon_address}', ${hsalon_lat}, ${hsalon_lng}, ${status})`,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Insert new hairsalon' })
     }
   )
 })
 
-app.put(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
+app.put(apiversion + '/hairsalon/:hsalon_id', async (req, res) => {
   var hsalon_name = req.body.hsalon_name
   var hsalon_detail = req.body.hsalon_detail
   var hsalon_time = req.body.hsalon_time
@@ -356,21 +356,21 @@ app.put(apiversion + '/hairsalon/:hsalon_id', function (req, res) {
       hsalon_lng,
       hsalon_id,
     ],
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'update hairsalon' })
     }
   )
 })
 
-app.get(apiversion + '/services', function (req, res) {
-  db.query('SELECT * FROM service', function (error, results, fields) {
+app.get(apiversion + '/services', async (req, res) => {
+  db.query('SELECT * FROM service', (error, results, fields) => {
     if (error) throw error
     return res.json({ error: false, message: 'service ', data: results })
   })
 })
 
-app.get(apiversion + '/service/:service_id', function (req, res) {
+app.get(apiversion + '/service/:service_id', async (req, res) => {
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
@@ -381,7 +381,7 @@ app.get(apiversion + '/service/:service_id', function (req, res) {
   db.query(
     'SELECT * FROM service where service_id=?',
     service_id.toString(),
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({
         error: false,
@@ -392,7 +392,7 @@ app.get(apiversion + '/service/:service_id', function (req, res) {
   )
 })
 
-app.delete(apiversion + '/service/:service_id', function (req, res) {
+app.delete(apiversion + '/service/:service_id', async (req, res) => {
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
@@ -400,14 +400,14 @@ app.delete(apiversion + '/service/:service_id', function (req, res) {
   db.query(
     'DELETE FROM service WHERE service_id = ?',
     req.params.service_id,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Service DELETE' })
     }
   )
 })
 
-app.post(apiversion + '/service', function (req, res) {
+app.post(apiversion + '/service', async (req, res) => {
   var service_name = req.body.service_name
   var service_pic = req.body.service_pic
   var service_price = req.body.service_price
@@ -423,14 +423,14 @@ app.post(apiversion + '/service', function (req, res) {
     `INSERT INTO service 
     (service_name,service_pic, service_price, service_time, hsalon_id) 
     VALUES ( '${service_name}','${service_pic}', '${service_price}', '${service_time}', '${hsalon_id}')`,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Insert new service' })
     }
   )
 })
 
-app.put(apiversion + '/service/:service_id', function (req, res) {
+app.put(apiversion + '/service/:service_id', async (req, res) => {
   let service_name = req.body.service_name
   let service_pic = req.body.service_pic
   let service_price = req.body.service_price
@@ -453,30 +453,30 @@ app.put(apiversion + '/service/:service_id', function (req, res) {
       hsalon_id,
       service_id,
     ],
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'update service' })
     }
   )
 })
 
-app.get(apiversion + '/notifications', function (req, res) {
+app.get(apiversion + '/notifications', async (req, res) => {
   db.query(
     'SELECT * FROM notification INNER JOIN hair_salon ON notification.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON notification.user_id=users.userId',
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'notification ', data: results })
     }
   )
 })
 
-app.get(apiversion + '/notification/:notification_id', function (req, res) {
+app.get(apiversion + '/notification/:notification_id', async (req, res) => {
   var notification_id = Number(req.params.notification_id)
 
   db.query(
     'SELECT * FROM notification where notification_id=?',
     notification_id.toString(),
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({
         error: false,
@@ -487,18 +487,18 @@ app.get(apiversion + '/notification/:notification_id', function (req, res) {
   )
 })
 
-app.delete(apiversion + '/notification/:notification_id', function (req, res) {
+app.delete(apiversion + '/notification/:notification_id', async (req, res) => {
   db.query(
     'DELETE FROM notification WHERE notification_id = ?',
     req.params.notification_id,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'notification DELETE' })
     }
   )
 })
 
-app.post(apiversion + '/notification', function (req, res) {
+app.post(apiversion + '/notification', async (req, res) => {
   var notification_text = req.body.notification_text
   var hairdresser_id = req.body.hairdresser_id
   var hsalon_id = req.body.hsalon_id
@@ -507,14 +507,14 @@ app.post(apiversion + '/notification', function (req, res) {
     `INSERT INTO notification 
     (notification_text,hairdresser_id, hsalon_id) 
     VALUES ( '${notification_text}','${hairdresser_id}', '${hsalon_id}')`,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Insert new notification' })
     }
   )
 })
 
-app.put(apiversion + '/notification/:notification_id', function (req, res) {
+app.put(apiversion + '/notification/:notification_id', async (req, res) => {
   var notification_text = req.body.notification_text
   var hairdresser_id = req.body.hairdresser_id
   var hsalon_id = req.body.hsalon_id
@@ -523,30 +523,30 @@ app.put(apiversion + '/notification/:notification_id', function (req, res) {
   db.query(
     'UPDATE notification SET notification_text = ?, hairdresser_id = ?, hsalon_id = ?= WHERE notification_id = ?',
     [notification_text, hairdresser_id, hsalon_id, notification_id],
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'update notification' })
     }
   )
 })
 
-app.get(apiversion + '/books', function (req, res) {
+app.get(apiversion + '/books', async (req, res) => {
   db.query(
     'SELECT * FROM booking INNER JOIN service ON booking.service_id=service.service_id INNER JOIN hair_salon ON booking.hsalon_id=hair_salon.hsalon_id INNER JOIN users ON booking.hairdresser_id=hairdresser.userId  INNER JOIN users ON booking.customer_id=customer.userId',
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'book ', data: results })
     }
   )
 })
 
-app.get(apiversion + '/book/:booking_id', function (req, res) {
+app.get(apiversion + '/book/:booking_id', async (req, res) => {
   var booking_id = Number(req.params.booking_id)
 
   db.query(
     'SELECT * FROM booking where booking_id=?',
     booking_id.toString(),
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({
         error: false,
@@ -557,18 +557,18 @@ app.get(apiversion + '/book/:booking_id', function (req, res) {
   )
 })
 
-app.delete(apiversion + '/book/:booking_id', function (req, res) {
+app.delete(apiversion + '/book/:booking_id', async (req, res) => {
   db.query(
     'DELETE FROM booking WHERE booking_id = ?',
     req.params.booking_id,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Booking DELETE' })
     }
   )
 })
 
-app.post(apiversion + '/book', function (req, res) {
+app.post(apiversion + '/book', async (req, res) => {
   var booking_day = req.body.booking_day
   var booking_time = req.body.booking_time
   var booking_dayuse = req.body.booking_dayuse
@@ -586,14 +586,14 @@ app.post(apiversion + '/book', function (req, res) {
       service_id, hsalon_id,hairdresser_id,customer_id) 
     VALUES ( '${booking_day}','${booking_time}', '${booking_dayuse}', '${booking_timeuse}', '${booking_status}', '${booking_point}', 
      '${service_id}', '${hsalon_id}', '${hairdresser_id}', '${customer_id}')`,
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'Insert new book' })
     }
   )
 })
 
-app.put(apiversion + '/book/:booking_id', function (req, res) {
+app.put(apiversion + '/book/:booking_id', async (req, res) => {
   var booking_day = req.body.booking_day
   var booking_time = req.body.booking_time
   var booking_dayuse = req.body.booking_dayuse
@@ -622,13 +622,13 @@ app.put(apiversion + '/book/:booking_id', function (req, res) {
       customer_id,
       booking_id,
     ],
-    function (error, results, fields) {
+    (error, results, fields) => {
       if (error) throw error
       return res.json({ error: false, message: 'update hairsalon' })
     }
   )
 })
 
-app.listen(port, function () {
+app.listen(port, () => {
   console.log('Server is up and running...')
 })
