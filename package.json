@@ -1,21 +1,23 @@
 {
-  "name": "bookshopapi",
+  "name": "vuejsapiproject",
   "version": "1.0.0",
-  "description": "ComSci BookShop API",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kesinee-bo/IonicBookShopAPI"
+    "url": "https://github.com/NuengS/VueJsAPIproject"
   },
-  "author": "Kesinee Boonchuay",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/kesinee-bo/IonicBookShopAPI/issues"
-  },
-  "homepage": "https://github.com/kesinee-bo/IonicBookShopAPI#readme",
+  "author": "Wuttichai siriwat",
+  "contributors": [
+    {
+      "name": "RNCAT",
+      "url": "https://github.com/RNCAT",
+      "email": "jaruwat.works@gmail.com"
+    }
+  ],
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
