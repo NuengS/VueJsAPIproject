@@ -6,7 +6,7 @@ const getTokenFrom = (request) => {
   return null
 }
 
-exports.sign = function (user, secretkey) {
+exports.sign = (user, secretkey) => {
   const jwt = require('jsonwebtoken')
 
   try {
@@ -16,7 +16,7 @@ exports.sign = function (user, secretkey) {
   }
 }
 
-exports.verify = function (req, res, next) {
+exports.verify = (req, res, next) => {
   const jwt = require('jsonwebtoken')
   const secretkey = process.env.SECRET
 
